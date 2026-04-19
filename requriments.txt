@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+langchain
+langchain-google-genai
+pandas
+streamlit
+python-dateutil
+matplotlib
+plotly
+pandas 
+numpy
+seaborn
+langchain-ollama
+ollama
