@@ -11,7 +11,6 @@ via the sidebar is honoured.
 import os
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq
 
 from services.transaction_service import (
     add_transaction,
@@ -149,7 +148,6 @@ def get_agent():
         ("placeholder", "{agent_scratchpad}"),
     ])
 
-    from langchain.agents import AgentExecutor, create_tool_calling_agent
     agent = create_tool_calling_agent(llm, _TOOLS, prompt)
     return AgentExecutor(
         agent=agent,
