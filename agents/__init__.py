@@ -1,1 +1,1 @@
-from .moneywise_agent import agent
+# get_agent() is the correct entry point — imported directly where needed.
