@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 app.py — MoneyWise AI Entry Point
 Run: streamlit run app.py
@@ -7,6 +9,7 @@ Supports dark/light theme toggle.
 """
 
 import streamlit as st
+from typing import Any, Optional, Dict, List
 
 st.set_page_config(
     page_title="MoneyWise AI — Personal Finance Assistant",
