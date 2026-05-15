@@ -1,11 +1,11 @@
 streamlit
 python-dotenv
 bcrypt
-langchain>=0.3.0
-langchain-community>=0.3.0
-langchain-core>=0.3.0
-langchain-groq
-langchain-nvidia-ai-endpoints
+langchain>=0.3.0,<1.0.0
+langchain-community>=0.3.0,<1.0.0
+langchain-core>=0.3.0,<1.0.0
+langchain-groq<1.0.0
+langchain-nvidia-ai-endpoints<1.0.0
 pandas
 numpy
 plotly

@@ -9,7 +9,7 @@ via the sidebar is honoured.
 """
 
 import os
-from langchain.agents.agent import AgentExecutor
+from langchain.agents import AgentExecutor
 from langchain.agents import create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
 
