@@ -1,3 +1,39 @@
-.env
+# ── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
 env/
+venv/
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env
+.streamlit/secrets.toml
+
+# ── SQLite database ───────────────────────────────────────────────────────────
+# The DB is backed up to GitHub via the Contents API (not git-tracked).
+# Tracking it in git would bloat history and cause merge conflicts.
+MoneyWise.db
+*.db
+*.db-shm
+*.db-wal
+*.db.tmp
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+scratch/
+dont_upload/
+Notebooks/
+
+# ── NOTE: scripts/ is intentionally tracked ──────────────────────────────────
+# scripts/keep_alive.py     → Playwright keep-alive (used by GitHub Actions)
+# scripts/test_deployment.py → Deployment test suite
+# Do NOT add scripts/ to this file.

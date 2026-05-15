@@ -1,0 +1,18 @@
+streamlit
+python-dotenv
+bcrypt
+langchain
+langchain-groq
+langchain-nvidia-ai-endpoints
+pandas
+numpy
+plotly
+matplotlib
+seaborn
+python-dateutil
+requests
+# ── CI / GitHub Actions only (keep-alive Playwright workflow) ─────────────────
+# Safe to include here — Streamlit Cloud installs it but never runs a browser.
+# GitHub Actions installs the Chromium binary separately via:
+#   playwright install chromium --with-deps
+playwright

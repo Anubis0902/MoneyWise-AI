@@ -1,0 +1,56 @@
+name: 🌐 Keep App Awake
+
+# ── Triggers ───────────────────────────────────────────────────────────────────
+on:
+  schedule:
+    # Every 6 hours at :00 — 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: "0 0,6,12,18 * * *"
+
+  # Run manually from the GitHub Actions tab whenever needed
+  workflow_dispatch:
+
+# ── Concurrency guard ──────────────────────────────────────────────────────────
+# Prevents two simultaneous keep-alive runs from racing each other.
+concurrency:
+  group: keep-alive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    name: Playwright Keep-Alive Ping
+    runs-on: ubuntu-latest
+    timeout-minutes: 15        # Hard-kill after 15 min if something hangs
+
+    steps:
+      # ── 1. Checkout (needed to access scripts/keep_alive.py) ────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Python runtime ────────────────────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── 3. Install Playwright Python package ─────────────────────────────────
+      - name: Install Playwright
+        run: pip install --quiet playwright
+
+      # ── 4. Install Chromium browser + OS-level dependencies ──────────────────
+      #    --with-deps installs system libs (libglib, libnss, etc.) on Ubuntu
+      - name: Install Chromium browser
+        run: playwright install chromium --with-deps
+
+      # ── 5. Run the keep-alive script ─────────────────────────────────────────
+      - name: Ping Streamlit app
+        env:
+          STREAMLIT_APP_URL: ${{ secrets.STREAMLIT_APP_URL }}
+          KEEP_ALIVE_WAIT_MS: "8000"
+        run: python scripts/keep_alive.py
+
+      # ── 6. Timestamp (always runs, even if step 5 failed) ────────────────────
+      - name: Log completion time
+        if: always()
+        run: |
+          echo "Keep-alive run finished at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "Next scheduled ping: in ~6 hours"
