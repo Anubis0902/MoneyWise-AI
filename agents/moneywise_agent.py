@@ -158,11 +158,3 @@ def get_agent():
     )
 
 
-# Module-level agent — created lazily so a missing GROQ_API_KEY at import
-# time does not crash the whole app.  get_agent() is the correct entry point.
-try:
-    agent = get_agent()
-except Exception:
-    agent = None  # Will be retried on first real request
-
-
