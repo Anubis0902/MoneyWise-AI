@@ -73,14 +73,20 @@ def _invoke_agent(query: str) -> str:
     if is_guest:
         from dotenv import load_dotenv
         load_dotenv(override=True)
-        api_key = os.getenv("NVIDIA_API_KEY", "")
-        if not api_key:
-            return "**NVIDIA API key not set.**\n\nPlease add NVIDIA_API_KEY to your .env file to enable demo mode AI."
-    else:
-        api_key = os.getenv("GROQ_API_KEY", "")
+        # Check environment first, then streamlit secrets
+        api_key = os.getenv("NVIDIA_API_KEY") or st.secrets.get("NVIDIA_API_KEY", "")
         if not api_key:
             return (
-                "**API key not set.**\n\n"
+                "**NVIDIA API key not set.**\n\n"
+                "To enable Demo Mode AI, please add `NVIDIA_API_KEY` to your environment variables "
+                "or your Streamlit Secrets dashboard."
+            )
+    else:
+        # For real users, we check st.session_state (from sidebar) or environment
+        api_key = st.session_state.get("api_key") or os.getenv("GROQ_API_KEY", "")
+        if not api_key:
+            return (
+                "**Groq API key not set.**\n\n"
                 "Please expand the **AI API Key** section in the sidebar and paste your Groq key.\n"
                 "Get a free key at [console.groq.com](https://console.groq.com)."
             )
