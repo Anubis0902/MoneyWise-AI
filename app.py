@@ -72,6 +72,57 @@ elif st.session_state.logged_in:
     # Force dashboard view when logged in
     st.session_state.current_view = "dashboard"
 
+    if st.session_state.get("collapse_sidebar", False):
+        import streamlit.components.v1 as components
+        components.html(
+            """
+            <script>
+            setTimeout(function() {
+                let topDoc = window.parent.document;
+                
+                const selectors = [
+                    '[data-testid="stSidebarCollapseButton"]',
+                    '[data-testid="baseButton-headerNoPadding"]',
+                    '[data-testid="baseButton-header"]',
+                    'button[kind="headerNoPadding"]'
+                ];
+                
+                let btn = null;
+                for (let selector of selectors) {
+                    btn = topDoc.querySelector(selector);
+                    if (btn) break;
+                }
+                
+                if (!btn) {
+                    const sidebar = topDoc.querySelector('[data-testid="stSidebar"]');
+                    if (sidebar) {
+                        const buttons = sidebar.querySelectorAll('button');
+                        if (buttons.length > 0) {
+                            btn = buttons[0];
+                        }
+                    }
+                }
+                
+                // Check if sidebar is expanded
+                const sidebar = topDoc.querySelector('[data-testid="stSidebar"]');
+                let isExpanded = false;
+                if (sidebar) {
+                    // In Streamlit 1.56, if it's expanded, the width is > 0 or aria-expanded is true
+                    isExpanded = sidebar.getAttribute('aria-expanded') !== 'false';
+                    if (sidebar.style.width && sidebar.style.width === "0px") isExpanded = false;
+                }
+
+                if (btn && isExpanded) {
+                    btn.click();
+                }
+            }, 300);
+            </script>
+            """,
+            height=0,
+            width=0,
+        )
+        st.session_state.collapse_sidebar = False
+
     from ui.sidebar import render_sidebar
     page = render_sidebar()
 

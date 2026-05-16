@@ -97,7 +97,6 @@ def render_report_page():
             📎 <b style="color:#f0f4ff;">CSV Attachment</b> — Every email includes the month's
             transactions as a CSV file.<br>
             🔒 <b style="color:#f0f4ff;">Secure</b> — Sent via encrypted Gmail SMTP.
-            Requires EMAIL_USER + EMAIL_PASS in your <code>.env</code> file.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -139,7 +138,8 @@ def _user_report_section(email: str):
 def _demo_report_section():
     st.markdown("""
     <div class="mw-alert-info" style="margin-bottom:16px;">
-        🚀 <b>Demo Mode</b> — Enter any email address and pick any month to generate a real AI report.
+        🚀 <b>Demo Mode</b> — Enter any email address and pick any month to generate a real AI report.<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If Email not received check spam folder
     </div>
     """, unsafe_allow_html=True)
 

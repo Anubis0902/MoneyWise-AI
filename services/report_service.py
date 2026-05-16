@@ -13,6 +13,7 @@ import pandas as pd
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+from email.utils import formatdate, make_msgid
 import streamlit as st
 
 from config import get_client
@@ -59,7 +60,7 @@ def generate_month_end_data(user_id: int, month_str: str = None, year_str: str =
         logger.error(f"Error generating month end data for user {user_id}: {e}")
         return None, 0, 0, 0
 
-def generate_ai_report(month_df: pd.DataFrame, income: float, expense: float, savings: float) -> str:
+def generate_ai_report(month_df: pd.DataFrame, income: float, expense: float, savings: float, month_str: str = None, year_str: str = None) -> str:
     """Use the LLM to write a personalized financial summary."""
     try:
         if month_df is None or month_df.empty:
@@ -73,10 +74,15 @@ def generate_ai_report(month_df: pd.DataFrame, income: float, expense: float, sa
             .to_string()
         )
 
-        prompt = f"""You are a professional personal finance assistant.
-Analyse the user's monthly financial data and generate a personalised financial report.
+        if month_str and year_str:
+            report_period = date(int(year_str), int(month_str), 1).strftime('%B %Y')
+        else:
+            report_period = date.today().strftime('%B %Y')
 
-Monthly Summary:
+        prompt = f"""You are a professional personal finance assistant.
+Analyse the user's financial data for {report_period} and generate a personalised financial report.
+
+Monthly Summary ({report_period}):
 Total Income:  ₹{income:,.2f}
 Total Expense: ₹{expense:,.2f}
 Net Savings:   ₹{savings:,.2f}
@@ -101,7 +107,8 @@ Rules:
         return "Error: Could not generate AI summary at this time."
 
 def send_monthly_report_email(receiver_email: str, llm_report: str, csv_data_bytes: bytes,
-                              income: float = 0, expense: float = 0, savings: float = 0):
+                              income: float = 0, expense: float = 0, savings: float = 0,
+                              month_str: str = None, year_str: str = None):
     """Send the report + CSV via Gmail SMTP. Secrets loaded from environment."""
     # Task 8: Secrets handling
     EMAIL_USER = os.getenv("EMAIL_USER") or st.secrets.get("EMAIL_USER")
@@ -111,11 +118,18 @@ def send_monthly_report_email(receiver_email: str, llm_report: str, csv_data_byt
         logger.error("Email credentials missing in environment/secrets.")
         raise ValueError("Email credentials not configured.")
 
+    if month_str and year_str:
+        report_period = date(int(year_str), int(month_str), 1).strftime('%B %Y')
+    else:
+        report_period = date.today().strftime('%B %Y')
+
     try:
         msg = MIMEMultipart()
-        msg["Subject"]  = f"💰 MoneyWise Financial Report — {date.today().strftime('%B %Y')}"
-        msg["From"]     = EMAIL_USER
+        msg["Subject"]  = f"💰 MoneyWise Financial Report — {report_period}"
+        msg["From"]     = f"MoneyWise AI <{EMAIL_USER}>"
         msg["To"]       = receiver_email
+        msg["Date"]     = formatdate(localtime=True)
+        msg["Message-ID"] = make_msgid(domain="moneywise.ai")
 
         html_body = f"""
         <html>
@@ -127,7 +141,7 @@ def send_monthly_report_email(receiver_email: str, llm_report: str, csv_data_byt
                         <tr>
                             <td style="background:#1e293b;padding:24px 32px;">
                                 <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0;">MoneyWise AI</h1>
-                                <p style="color:#94a3b8;font-size:13px;margin:4px 0 0;">Monthly Financial Report</p>
+                                <p style="color:#94a3b8;font-size:13px;margin:4px 0 0;">Financial Report - {report_period}</p>
                             </td>
                         </tr>
 
@@ -208,13 +222,14 @@ def execute_monthend_workflow(receiver_email: str = None, month_str: str = None,
     if month_df is None or month_df.empty:
         return "No transactions found for the specified period."
 
-    report = generate_ai_report(month_df, income, expense, savings)
+    report = generate_ai_report(month_df, income, expense, savings, month_str, year_str)
 
     if receiver_email:
         try:
             csv_bytes = month_df.to_csv(index=False).encode("utf-8")
             send_monthly_report_email(receiver_email, report, csv_bytes,
-                                      income=income, expense=expense, savings=savings)
+                                      income=income, expense=expense, savings=savings,
+                                      month_str=month_str, year_str=year_str)
         except Exception as e:
             return f"{report}\n\n---\n⚠️ Error sending email: {str(e)}"
 

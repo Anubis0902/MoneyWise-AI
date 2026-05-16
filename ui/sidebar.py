@@ -186,6 +186,7 @@ def render_sidebar() -> str:
             )
             if clicked:
                 st.session_state.current_page = key
+                st.session_state.collapse_sidebar = True
                 st.rerun()
 
         st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)

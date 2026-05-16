@@ -366,7 +366,7 @@ def _render_chat_section():
     if st.session_state.pop("clear_goal_input", False):
         st.session_state.goal_chat_input = ""
 
-    form_col, clear_col = st.columns([22, 1])
+    form_col, clear_col = st.columns([22, 1], vertical_alignment="center")
     with form_col:
         with st.form(key="goal_chat_form", clear_on_submit=False):
             in_col, btn_col = st.columns([20, 1], vertical_alignment="center")
