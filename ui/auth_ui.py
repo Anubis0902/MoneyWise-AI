@@ -11,7 +11,14 @@ Dynamic password visibility toggle. Back-to-home navigation.
 
 import streamlit as st
 from auth.auth import signup_user, login_user, reset_password
-from ui.demo_data import setup_demo_profile, DEMO_USER
+
+# Optional import for demo data (may be excluded from production/GitHub)
+try:
+    from ui.demo_data import setup_demo_profile, DEMO_USER
+    HAS_DEMO = True
+except ImportError:
+    HAS_DEMO = False
+    DEMO_USER = {"email": "", "password": ""}
 
 
 def show_auth_screen():
@@ -189,6 +196,15 @@ def _signup_form():
 
 def _demo_form():
     """Demo access with auto-filled credentials."""
+    if not HAS_DEMO:
+        st.markdown("""
+        <div class="mw-alert-info">
+            <strong>Demo mode is currently disabled in this environment.</strong><br>
+            Please use the <strong>Login</strong> or <strong>Sign Up</strong> tabs.
+        </div>
+        """, unsafe_allow_html=True)
+        return
+
     st.markdown("""
     <div class="mw-alert-info" style="margin-bottom:16px;">
         <strong>Demo credentials are pre-filled below.</strong><br>
