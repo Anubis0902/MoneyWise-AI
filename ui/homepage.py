@@ -72,6 +72,6 @@ def show_homepage():
     # ── Footer ───────────────────────────────────────────────────
     st.markdown("""
     <div style="text-align:center; font-size:12px; color:var(--text-muted); padding:20px 0 40px;">
-        MoneyWise AI &copy; 2024&ndash;2026 &nbsp;&middot;&nbsp; Built with Streamlit, LangChain & Groq
+        MoneyWise AI &copy;  &nbsp;&middot;&nbsp; Built with Streamlit, LangChain & Groq
     </div>
     """, unsafe_allow_html=True)
