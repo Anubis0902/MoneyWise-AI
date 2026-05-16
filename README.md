@@ -103,8 +103,8 @@ All charts are **interactive Plotly figures** with hover tooltips in Indian curr
 ### 🔐 Authentication
 - Secure bcrypt password hashing (cost factor 12)
 - Duplicate email **and** duplicate username detection
-- Password reset via email (no verification email — trust-based for portfolio)
-- Demo mode with pre-populated 1,000+ transaction dataset
+- Password reset via email )
+- Demo mode with pre-populated 1,400+ transaction dataset
 
 ### ☁️ Backup & Recovery
 - Automatic SQLite backup to a private GitHub repository via the Contents API
@@ -126,7 +126,6 @@ All charts are **interactive Plotly figures** with hover tooltips in Indian curr
 | **Keep-Alive** | Playwright (headless Chromium) + GitHub Actions |
 | **Email** | Gmail SMTP via `smtplib` + `email.mime` |
 | **Auth** | bcrypt password hashing |
-| **CI/CD** | GitHub Actions (2 workflows) |
 | **Deployment** | Streamlit Community Cloud (free tier) |
 
 ---
@@ -281,68 +280,6 @@ Open [http://localhost:8501](http://localhost:8501) — use the **Demo Access** 
 
 ---
 
-## ☁️ Streamlit Cloud Deployment
-
-### Step 1 — Deploy the app
-
-1. Push this repo to GitHub (your own fork)
-2. Go to [share.streamlit.io](https://share.streamlit.io) → New app
-3. Select your repo, branch `main`, main file `app.py`
-4. Add secrets in **Settings → Secrets** (see below)
-
-### Step 2 — Create the backup repository
-
-1. Create a new **private** GitHub repository (e.g. `moneywise-db-backup`)
-2. Initialize it with a README so the `main` branch exists
-
-### Step 3 — Generate a GitHub Personal Access Token
-
-1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. **Scopes:** ✅ `repo` (full control)
-3. **Expiry:** 1 year
-
-### Step 4 — Set Streamlit Cloud secrets
-
-```toml
-GROQ_API_KEY    = "gsk_..."
-NVIDIA_API_KEY  = "nvapi-..."
-GITHUB_TOKEN    = "ghp_..."
-GITHUB_REPO     = "yourusername/moneywise-db-backup"
-GITHUB_DB_PATH  = "MoneyWise.db"
-GITHUB_BRANCH   = "main"
-```
-
-### Step 5 — Set GitHub Actions secrets
-
-In your **app repo** → Settings → Secrets → Actions:
-
-| Secret | Value |
-|--------|-------|
-| `STREAMLIT_APP_URL` | Full URL of your deployed app |
-| `BACKUP_GITHUB_TOKEN` | Same PAT from Step 3 |
-| `BACKUP_GITHUB_REPO` | `yourusername/moneywise-db-backup` |
-
----
-
-## 🔑 Secrets & Environment Variables
-
-| Key | Required | Description |
-|-----|----------|-------------|
-| `GROQ_API_KEY` | Yes (real users) | Groq API key for LLaMA 3.3 70B |
-| `NVIDIA_API_KEY` | Yes (demo user) | NVIDIA NIM key for demo AI |
-| `GITHUB_TOKEN` | Recommended | PAT for DB backup/restore |
-| `GITHUB_REPO` | Recommended | `user/repo` for backup storage |
-| `GITHUB_DB_PATH` | Recommended | File path in backup repo |
-| `GITHUB_BRANCH` | Recommended | Branch name (default: `main`) |
-| `EMAIL_USER` | Optional | Gmail address for reports |
-| `EMAIL_PASS` | Optional | Gmail App Password |
-| `STREAMLIT_APP_URL` | CI only | Full app URL for keep-alive |
-| `BACKUP_GITHUB_TOKEN` | CI only | PAT for health check workflow |
-| `BACKUP_GITHUB_REPO` | CI only | Backup repo for health check |
-
-All keys are loaded from `.streamlit/secrets.toml` (Streamlit Cloud) or `.env` (local). **Never commit either file** — both are gitignored.
-
----
 
 ## 🔄 SQLite Backup & Recovery System
 
@@ -379,35 +316,6 @@ moneywise-db-backup/
 ```
 
 Git commit history in the backup repo provides a lightweight version trail.
-
----
-
-## ⚙️ GitHub Actions (Keep-Alive + Health Check)
-
-### `keep_alive.yml` — runs every 6 hours
-
-Prevents Streamlit Community Cloud from putting the app to sleep (which happens after ~7 days of zero traffic):
-
-```yaml
-schedule:
-  - cron: '0 0,6,12,18 * * *'  # 00:00, 06:00, 12:00, 18:00 UTC
-```
-
-1. Installs Playwright + Chromium
-2. Runs `scripts/keep_alive.py` — opens the app in headless Chrome
-3. Waits for `[data-testid='stApp']` selector (confirms full Streamlit render)
-4. Holds for 8 seconds, then closes
-5. Exits with code 1 if `STREAMLIT_APP_URL` secret is missing (clear error message)
-
-**Free tier usage:** ~600 min/month (limit: 2,000 min/month) ✅
-
-### `db_backup.yml` — runs daily at 03:00 UTC
-
-Health check — does **not** create backups (only the live app can do that). It:
-1. Downloads the backup DB from GitHub
-2. Validates SQLite magic bytes (`SQLite format 3\x00`)
-3. Checks if the backup is fresh (alert if > 48 hours old)
-4. Logs a diagnostic report
 
 ---
 
@@ -460,66 +368,6 @@ AgentExecutor (max_iterations=5, handle_parsing_errors=True)
 
 ---
 
-## 🧪 Testing
-
-### Deployment test suite (23 tests)
-```bash
-# Mocked — safe, no API calls (~0.2 s)
-python scripts/test_deployment.py
-
-# Live — real GitHub API calls
-python scripts/test_deployment.py --live
-```
-
-Covers: config loading, restore logic, backup upload, SHA verification, skip-if-unchanged, environment detection, keep-alive URL validation.
-
-### Full QA runner (55 tests)
-```bash
-$env:PYTHONIOENCODING='utf-8'; python scripts/qa_runner.py
-```
-
-Covers: DB init, WAL mode, SQLite CRUD, 11 auth scenarios, 5 SQL injection payloads, user isolation, 5 transaction filters, 10-thread concurrent writes, GitHub backup system, Text2SQL security, null-string edge cases, requirements integrity, workflow file presence.
-
-**Final results:**
-```
-✅ 55 PASS  |  ❌ 0 FAIL  |  ⚠️  2 WARN
-```
-
----
-
-## 📋 QA Report Summary
-
-| Metric | Score |
-|--------|-------|
-| Overall Deployment | **8.2 / 10** |
-| Portfolio Readiness | **9.0 / 10** |
-| Recruiter Demo Readiness | **9.5 / 10** |
-
-### Bugs found and fixed during QA
-
-| Severity | Bug | Fix |
-|----------|-----|-----|
-| 🔴 Critical | `bcrypt` missing from `requirements.txt` | Added to requirements |
-| 🟠 High | `signup_user` crashes on duplicate username | Added pre-check + rollback |
-| 🟡 Medium | `str(None) == "null"` broken null check | New `_null_str()` helper |
-| 🔵 Low | SQLite in `delete` journal mode | Enabled WAL + busy_timeout |
-| 🔵 Low | Double `conn.close()` in sql_service | Removed redundant close |
-
----
-
-## ⚠️ Known Limitations
-
-| Limitation | Notes |
-|------------|-------|
-| SQLite ephemeral disk | DB resets on Streamlit container restart — handled by backup/restore |
-| Single-file backup | No point-in-time restore — GitHub commit history provides some history |
-| No login rate limiting | Brute-force possible; low priority for portfolio grade |
-| UNION injection in Text2SQL | Non-blocklisted tables could be queried; attacker must be authenticated |
-| NVIDIA NIM key required | Demo user requires a valid NVIDIA NIM API key in secrets |
-| Email optional | Monthly report email requires Gmail App Password configuration |
-| GitHub Actions pause | Scheduled workflows pause after 60 days of repo inactivity — make at least one commit every 60 days |
-
----
 
 ## 📄 License
 
