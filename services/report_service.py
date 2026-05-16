@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 services/report_service.py
 

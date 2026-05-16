@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 services/sql_service.py
 

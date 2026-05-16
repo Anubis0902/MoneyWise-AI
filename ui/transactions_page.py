@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 ui/transactions_page.py
 
@@ -13,7 +11,6 @@ import streamlit as st
 import pandas as pd
 from datetime import date, datetime
 import os
-from typing import Any, Optional, Dict, List
 
 from database.connection import get_connection
 from utils.logger import get_logger
