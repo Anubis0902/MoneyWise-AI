@@ -10,7 +10,7 @@ Dynamic password visibility toggle. Back-to-home navigation.
 """
 
 import streamlit as st
-from auth.auth import signup_user, login_user, reset_password
+from auth.auth import signup_user, login_user
 
 # Optional import for demo data (may be excluded from production/GitHub)
 try:
@@ -109,42 +109,70 @@ def _login_form():
 
 
 def _forgot_password_form():
-    """Inline forgot password: enter email → set new password."""
-    reset_email = st.text_input("Enter your registered email",
-                                key="reset_email", placeholder="you@example.com")
-
-    show_new_pw = st.checkbox("Show new password", key="reset_show_pw", value=False)
-    new_pass = st.text_input(
-        "New Password",
-        type="default" if show_new_pw else "password",
-        key="reset_new_pass",
-        placeholder="At least 6 characters"
-    )
-    confirm_pass = st.text_input(
-        "Confirm New Password",
-        type="default" if show_new_pw else "password",
-        key="reset_confirm_pass",
-        placeholder="Repeat new password"
-    )
-
-    if st.button("Reset Password", key="btn_reset_pw", use_container_width=True):
-        if not reset_email or "@" not in reset_email:
-            st.markdown("<div class='mw-alert-error'>Enter a valid email.</div>",
-                        unsafe_allow_html=True)
-            return
-        if len(new_pass) < 6:
-            st.markdown("<div class='mw-alert-error'>Password must be at least 6 characters.</div>",
-                        unsafe_allow_html=True)
-            return
-        if new_pass != confirm_pass:
-            st.markdown("<div class='mw-alert-error'>Passwords do not match.</div>",
-                        unsafe_allow_html=True)
-            return
-        ok, msg = reset_password(reset_email, new_pass)
-        if ok:
-            st.markdown(f"<div class='mw-alert-success'>{msg}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='mw-alert-error'>{msg}</div>", unsafe_allow_html=True)
+    """Inline forgot password: enter email -> send OTP -> enter OTP & new password."""
+    
+    if "reset_step" not in st.session_state:
+        st.session_state.reset_step = "request"
+        
+    if st.session_state.reset_step == "request":
+        reset_email = st.text_input("Enter your registered email", key="reset_email_input", placeholder="you@example.com")
+        
+        if st.button("Send Reset Code", key="btn_send_otp", use_container_width=True):
+            if not reset_email or "@" not in reset_email:
+                st.markdown("<div class='mw-alert-error'>Enter a valid email.</div>", unsafe_allow_html=True)
+                return
+            
+            from auth.auth import request_password_reset
+            msg = request_password_reset(reset_email)
+            st.session_state.reset_email_target = reset_email
+            st.session_state.reset_step = "verify"
+            st.session_state.reset_msg = msg
+            st.rerun()
+            
+    elif st.session_state.reset_step == "verify":
+        st.markdown(f"<div class='mw-alert-info'>{st.session_state.get('reset_msg', '')}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:14px; margin-bottom:10px;'>Email: <b>{st.session_state.reset_email_target}</b></div>", unsafe_allow_html=True)
+        
+        otp = st.text_input("Enter 6-digit code", key="reset_otp", placeholder="123456")
+        
+        show_new_pw = st.checkbox("Show new password", key="reset_show_pw", value=False)
+        new_pass = st.text_input(
+            "New Password",
+            type="default" if show_new_pw else "password",
+            key="reset_new_pass",
+            placeholder="At least 6 characters"
+        )
+        confirm_pass = st.text_input(
+            "Confirm New Password",
+            type="default" if show_new_pw else "password",
+            key="reset_confirm_pass",
+            placeholder="Repeat new password"
+        )
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Cancel", key="btn_cancel_reset", use_container_width=True):
+                st.session_state.reset_step = "request"
+                st.rerun()
+        with col2:
+            if st.button("Reset Password", key="btn_reset_pw", use_container_width=True):
+                if not otp or len(otp) != 6:
+                    st.markdown("<div class='mw-alert-error'>Please enter the 6-digit code.</div>", unsafe_allow_html=True)
+                    return
+                if len(new_pass) < 6:
+                    st.markdown("<div class='mw-alert-error'>Password must be at least 6 characters.</div>", unsafe_allow_html=True)
+                    return
+                if new_pass != confirm_pass:
+                    st.markdown("<div class='mw-alert-error'>Passwords do not match.</div>", unsafe_allow_html=True)
+                    return
+                    
+                from auth.auth import verify_and_reset_password
+                ok, msg = verify_and_reset_password(st.session_state.reset_email_target, otp, new_pass)
+                if ok:
+                    st.markdown(f"<div class='mw-alert-success'>{msg}</div>", unsafe_allow_html=True)
+                    st.session_state.reset_step = "request"
+                else:
+                    st.markdown(f"<div class='mw-alert-error'>{msg}</div>", unsafe_allow_html=True)
 
 
 def _signup_form():

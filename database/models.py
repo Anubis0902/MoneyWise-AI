@@ -57,6 +57,18 @@ def create_tables() -> None:
             )
         """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS Password_Resets (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                User_Id INTEGER NOT NULL,
+                OTP_Hash TEXT NOT NULL,
+                Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                Expires_At TIMESTAMP NOT NULL,
+                Failed_Attempts INTEGER DEFAULT 0,
+                FOREIGN KEY (User_Id) REFERENCES Users(Id)
+            )
+        """)
+
         conn.commit()
         # Perform safe migration for existing installations
         migrate_to_real(conn)
