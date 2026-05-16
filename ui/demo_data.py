@@ -57,10 +57,13 @@ def _seed_transactions(user_id: int):
         ("Zomato – Pizza Hut", 550), ("Swiggy – Biryani Blues", 420), ("McDonald's Maharaja Mac", 380),
         ("Starbucks Coffee", 450), ("Local Chaat Center", 120), ("Haldiram's Lunch", 650),
         ("Subway Meal", 320), ("Tea Post – Ginger Tea", 80), ("Canteen Lunch", 150),
-        ("Blinkit – Weekly Grocery", 1400), ("Big Basket – Pantry", 2200), ("Local Milk & Bread", 250),
-        ("Instamart – Snacks", 450), ("D-Mart Shopping", 4500), ("Fruit Vendor", 300),
         ("Fine Dining – Dinner", 3500), ("Biryani House", 800), ("Cafe Coffee Day", 280),
         ("KFC – Bucket", 720), ("Domino's Delivery", 580), ("Barbeque Nation", 1800)
+    ]
+    
+    grocery_items = [
+        ("Blinkit – Weekly Grocery", 1400), ("Big Basket – Pantry", 2200), ("Local Milk & Bread", 250),
+        ("Instamart – Snacks", 450), ("D-Mart Shopping", 4500), ("Fruit Vendor", 300)
     ]
     
     transport_items = [
@@ -220,8 +223,13 @@ def _seed_transactions(user_id: int):
         if year == 2025 and month == 3:
             records.append((user_id, "2025-03-15", "Dell XPS 15 Laptop", 165000, "Expense", "Shopping", "Card"))
 
-        # 6. Healthcare, Stationery, Misc
-        for cat, items, freq in [("Healthcare", healthcare_items, 0.6), ("Stationery", stationery_items, 0.4), ("Miscellaneous", miscellaneous_items, 0.8)]:
+        # 6. Healthcare, Stationery, Groceries, Misc
+        for cat, items, freq in [
+            ("Healthcare", healthcare_items, 0.6), 
+            ("Stationery", stationery_items, 0.4), 
+            ("Groceries",  grocery_items, 0.9), 
+            ("Miscellaneous", miscellaneous_items, 0.8)
+        ]:
             if random.random() < freq:
                 d = date(year, month, random.randint(1, last_day.day))
                 if d <= today:
