@@ -157,7 +157,7 @@ def get_agent():
         agent=agent,
         tools=_TOOLS,
         verbose=True,
-        max_iterations=5,
+        max_iterations=10,
         handle_parsing_errors=True,
     )
 

@@ -188,7 +188,7 @@ def add_transaction(
             conn.close()
 
 
-@tool
+@tool(return_direct=True)
 def get_transactions(
     Title: str = None,
     Amount: Optional[Union[float, str]] = None,
@@ -227,11 +227,13 @@ def get_transactions(
     if not rows:
         return "No transactions found."
 
-    lines = [f"Found {len(rows)} transaction(s):"]
+    header = "| ID | Date | Description | Amount | Type | Category | Mode |"
+    separator = "|---|---|---|---|---|---|---|"
+    lines = [f"Found {len(rows)} transaction(s):", "", header, separator]
     for r in rows:
         # Expected: Id(0), Date(1), Title(2), Amount(3), Type(4), Category(5), Mode(6)
         amt = float(r[3]) if r[3] is not None else 0.0
-        lines.append(f"  ID {r[0]} | {r[1]} | {r[2]} | ₹{amt:,.2f} | {r[4]} | {r[5]} | {r[6]}")
+        lines.append(f"| {r[0]} | {r[1]} | {r[2]} | ₹{amt:,.2f} | {r[4]} | {r[5]} | {r[6]} |")
     return "\n".join(lines)
 
 
@@ -334,9 +336,11 @@ def update_transactions(
         return "Error: Authentication required."
 
     resolved_id = _resolve_id(Id)
+    
+    # Case-insensitive field lookup
+    field_map = {k.lower(): v for k, v in ALLOWED_TRANSACTION_FIELDS.items()}
+    clean_field = field_map.get(field.lower()) if field else None
 
-    # Task 2: Whitelist validation
-    clean_field = ALLOWED_TRANSACTION_FIELDS.get(field)
     if not clean_field:
         return f"Error: Field '{field}' is not editable. Allowed: {list(ALLOWED_TRANSACTION_FIELDS.keys())}"
 
@@ -386,7 +390,7 @@ def update_transactions(
             conn.close()
 
 
-@tool
+@tool(return_direct=True)
 def get_savings(
     Month: str = None,
     DateFrom: str = None,

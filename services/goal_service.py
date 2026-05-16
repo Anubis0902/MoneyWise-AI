@@ -157,7 +157,7 @@ def create_goal(
             conn.close()
 
 
-@tool
+@tool(return_direct=True)
 def get_goals(
     Title: str = None,
     Started_at: str = None,
@@ -183,16 +183,15 @@ def get_goals(
     if not rows:
         return "No goals found."
 
-    lines = [f"Found {len(rows)} goal(s):"]
+    header = "| ID | Title | Started At | Deadline | Target | Saved | Status |"
+    separator = "|---|---|---|---|---|---|---|"
+    lines = [f"Found {len(rows)} goal(s):", "", header, separator]
     for r in rows:
         # Id(0), Title(1), Started_At(2), Deadline(3), Target_Amount(4), Saved_Amount(5), Status(6)
-        deadline_str = f" | Deadline: {r[3]}" if r[3] else ""
         target_amt = float(r[4]) if r[4] is not None else 0.0
         saved_amt = float(r[5]) if r[5] is not None else 0.0
-        lines.append(
-            f"  ID {r[0]} | {r[1]} | Started: {r[2]}{deadline_str} "
-            f"| Target: ₹{target_amt:,.2f} | Saved: ₹{saved_amt:,.2f} | {r[6]}"
-        )
+        deadline = r[3] if r[3] else "—"
+        lines.append(f"| {r[0]} | {r[1]} | {r[2]} | {deadline} | ₹{target_amt:,.2f} | ₹{saved_amt:,.2f} | {r[6]} |")
     return "\n".join(lines)
 
 
@@ -282,7 +281,11 @@ def update_goals(
         return "Error: Authentication required."
 
     resolved_id = _resolve_id(Id)
-    clean_field = ALLOWED_GOAL_FIELDS.get(field)
+    
+    # Case-insensitive field lookup
+    field_map = {k.lower(): v for k, v in ALLOWED_GOAL_FIELDS.items()}
+    clean_field = field_map.get(field.lower()) if field else None
+
     if not clean_field:
         return f"Error: Field '{field}' is not editable. Allowed: {list(ALLOWED_GOAL_FIELDS.keys())}"
 
