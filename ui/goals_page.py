@@ -71,6 +71,9 @@ def _invoke_agent(query: str) -> str:
         import traceback
         err_trace = traceback.format_exc()
         err = str(e)
+        if "401" in err or "Invalid API Key" in err or "authentication" in err.lower():
+            return "⚠️ **Invalid API Key.** Please check your Groq or NVIDIA API key in the sidebar or environment settings."
+
         if "failed_generation" in err or "Failed to call a function" in err or "ValidationError" in err:
             try:
                 agent = get_agent()
