@@ -127,38 +127,19 @@ def get_agent():
             max_tokens=2048,
         )
     else:
-        # For logged-in users, try Groq first, then fallback to NVIDIA
+        # For logged-in users, strictly use Groq. No fallback to NVIDIA.
         try:
             groq_key = st.session_state.get("api_key") or os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY", "")
         except Exception:
             groq_key = os.getenv("GROQ_API_KEY", "")
             
-        if groq_key:
-            from langchain_groq import ChatGroq
-            llm = ChatGroq(
-                model="llama-3.3-70b-versatile",
-                api_key=groq_key,
-                temperature=0,
-                max_tokens=2048,
-            )
-        else:
-            nvidia_key = os.getenv("NVIDIA_API_KEY") or st.secrets.get("NVIDIA_API_KEY", "")
-            if nvidia_key:
-                from langchain_nvidia_ai_endpoints import ChatNVIDIA
-                llm = ChatNVIDIA(
-                    model="meta/llama-3.3-70b-instruct",
-                    api_key=nvidia_key,
-                    temperature=0,
-                    max_tokens=2048,
-                )
-            else:
-                from langchain_groq import ChatGroq
-                llm = ChatGroq(
-                    model="llama-3.3-70b-versatile",
-                    api_key="",
-                    temperature=0,
-                    max_tokens=2048,
-                )
+        from langchain_groq import ChatGroq
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            api_key=groq_key or "",
+            temperature=0,
+            max_tokens=2048,
+        )
 
     from datetime import date as _date
     today_str = _date.today().isoformat()

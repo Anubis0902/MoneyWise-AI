@@ -52,36 +52,16 @@ def get_client():
             max_tokens=1024,
         )
 
-    # For logged-in users, try Groq first, then fallback to NVIDIA
+    # For logged-in users, strictly use Groq. No fallback to NVIDIA.
     from langchain_groq import ChatGroq
     try:
         groq_key = st.session_state.get("api_key") or os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY", "")
     except Exception:
         groq_key = os.getenv("GROQ_API_KEY", "")
         
-    if groq_key:
-        return ChatGroq(
-            model="llama-3.3-70b-versatile",
-            api_key=groq_key,
-            temperature=0.2,
-            max_tokens=1024,
-        )
-        
-    # Fallback to NVIDIA if no Groq key is found but NVIDIA is available
-    nvidia_key = os.getenv("NVIDIA_API_KEY") or st.secrets.get("NVIDIA_API_KEY", "")
-    if nvidia_key:
-        from langchain_nvidia_ai_endpoints import ChatNVIDIA
-        return ChatNVIDIA(
-            model="meta/llama-3.3-70b-instruct",
-            api_key=nvidia_key,
-            temperature=0.2,
-            max_tokens=1024,
-        )
-        
-    # Return Groq by default (will fail gracefully later if empty)
     return ChatGroq(
         model="llama-3.3-70b-versatile",
-        api_key="",
+        api_key=groq_key or "",
         temperature=0.2,
         max_tokens=1024,
     )

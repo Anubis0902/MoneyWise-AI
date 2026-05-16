@@ -38,15 +38,14 @@ def _invoke_agent(query: str) -> str:
                 "or your Streamlit Secrets dashboard."
             )
     else:
-        # For real users, we check st.session_state (from sidebar) or environment for Groq, then NVIDIA
+        # For real users, we check st.session_state (from sidebar) or environment for Groq
         api_key = st.session_state.get("api_key") or os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY", "")
-        nvidia_key = os.getenv("NVIDIA_API_KEY") or st.secrets.get("NVIDIA_API_KEY", "")
         
-        if not api_key and not nvidia_key:
+        if not api_key:
             return (
                 "**API key not set.**\n\n"
                 "Please expand the **AI API Key** section in the sidebar and paste your Groq key, "
-                "or set `NVIDIA_API_KEY` / `GROQ_API_KEY` in your Streamlit Secrets."
+                "or set `GROQ_API_KEY` in your Streamlit Secrets."
             )
 
     from agents.moneywise_agent import get_agent
