@@ -86,22 +86,22 @@ def get_transactions_raw(
         query = "SELECT Id, Date, Title, Amount, Type, Category, Mode FROM Transactions WHERE User_Id = ?"
         values = [user_id]
 
-        if Date:
+        if not _null_str(Date):
             query += " AND Date = ?"
             values.append(Date)
-        if Month:
-            query += " AND strftime('%Y-%m', Date) = ?"
-            values.append(Month)
-        if Year:
+        if not _null_str(Month):
+            query += " AND strftime('%m', Date) = ?"
+            values.append(Month.zfill(2))
+        if not _null_str(Year):
             query += " AND strftime('%Y', Date) = ?"
             values.append(Year)
-        if DateFrom:
+        if not _null_str(DateFrom):
             query += " AND Date >= ?"
             values.append(DateFrom)
-        if DateTo:
+        if not _null_str(DateTo):
             query += " AND Date <= ?"
             values.append(DateTo)
-        if Title:
+        if not _null_str(Title):
             query += " AND LOWER(Title) LIKE LOWER(?)"
             values.append(f"%{Title}%")
         if Amount is not None:
@@ -113,13 +113,13 @@ def get_transactions_raw(
         if AmountMax is not None:
             query += " AND Amount <= ?"
             values.append(AmountMax)
-        if Type:
+        if not _null_str(Type):
             query += " AND LOWER(Type) = LOWER(?)"
             values.append(Type)
-        if Category:
+        if not _null_str(Category):
             query += " AND LOWER(Category) LIKE LOWER(?)"
             values.append(f"%{Category}%")
-        if Mode:
+        if not _null_str(Mode):
             query += " AND LOWER(Mode) LIKE LOWER(?)"
             values.append(f"%{Mode}%")
 
@@ -141,7 +141,7 @@ def add_transaction(
     Title: str,
     Amount: Optional[Union[float, str]] = None,
     Category: str = "Other",
-    Type: str = None,
+    Type: Optional[str] = None,
     Mode: str = "Online",
     user_id: Optional[Union[int, str]] = None,
 ) -> str:
@@ -190,21 +190,36 @@ def add_transaction(
 
 @tool(return_direct=True)
 def get_transactions(
-    Title: str = None,
+    Title: Optional[str] = None,
     Amount: Optional[Union[float, str]] = None,
-    Type: str = None,
-    Category: str = None,
-    Mode: str = None,
-    Date: str = None,
-    Month: str = None,
-    Year: str = None,
-    DateFrom: str = None,
-    DateTo: str = None,
+    Type: Optional[str] = None,
+    Category: Optional[str] = None,
+    Mode: Optional[str] = None,
+    Date: Optional[str] = None,
+    Month: Optional[str] = None,
+    Year: Optional[str] = None,
+    DateFrom: Optional[str] = None,
+    DateTo: Optional[str] = None,
     AmountMin: Optional[Union[float, str]] = None,
     AmountMax: Optional[Union[float, str]] = None,
     user_id: Optional[Union[int, str]] = None,
 ) -> str:
-    """Retrieve filtered transactions for the current user."""
+    """Retrieve filtered transactions for the current user.
+    
+    Args:
+        Title: Core name (e.g. 'Pizza'). DO NOT include 'transaction' or 'expense'.
+    """
+    if _null_str(Title): Title = None
+    if Title:
+        Title = Title.lower().replace("transaction", "").replace("expense", "").strip()
+    if _null_str(Type): Type = None
+    if _null_str(Category): Category = None
+    if _null_str(Mode): Mode = None
+    if _null_str(Date): Date = None
+    if _null_str(Month): Month = None
+    if _null_str(Year): Year = None
+    if _null_str(DateFrom): DateFrom = None
+    if _null_str(DateTo): DateTo = None
     if _null_str(Amount):   Amount    = None
     if _null_str(AmountMin): AmountMin = None
     if _null_str(AmountMax): AmountMax = None
@@ -239,11 +254,11 @@ def get_transactions(
 
 @tool(return_direct=True)
 def delete_transactions(
-    Title: str = None,
+    Title: Optional[str] = None,
     Amount: Optional[Union[float, str]] = None,
-    Type: str = None,
-    Category: str = None,
-    Mode: str = None,
+    Type: Optional[str] = None,
+    Category: Optional[str] = None,
+    Mode: Optional[str] = None,
     Id: Optional[Union[int, str]] = None,
     Ids: Optional[List[int]] = None,
     user_id: Optional[Union[int, str]] = None,
@@ -258,7 +273,14 @@ def delete_transactions(
     - To delete a specific record: provide Id=<integer>.
     - To delete multiple specific records: provide Ids=[id1, id2, ...].
     - NEVER use this tool to delete by name alone if multiple records exist.
+    - In 'Title', pass ONLY the core name (e.g. 'Pizza'). DO NOT include 'transaction' or 'expense'.
     """
+    if _null_str(Title): Title = None
+    if Title:
+        Title = Title.lower().replace("transaction", "").replace("expense", "").strip()
+    if _null_str(Type): Type = None
+    if _null_str(Category): Category = None
+    if _null_str(Mode): Mode = None
     if _null_str(Amount): Amount = None
     if Amount is not None:
         try: Amount = float(Amount)
@@ -330,7 +352,14 @@ def update_transactions(
     Id: Optional[Union[int, str]] = None,
     user_id: Optional[Union[int, str]] = None,
 ) -> str:
-    """Update transactions using whitelist validation and user isolation."""
+    """Update transactions using whitelist validation and user isolation.
+    
+    Args:
+        Title: Core name (e.g. 'Pizza'). DO NOT include 'transaction' or 'expense'.
+    """
+    if _null_str(Title): Title = None
+    if Title:
+        Title = Title.lower().replace("transaction", "").replace("expense", "").strip()
     u_id = _resolve_uid(user_id)
     if not u_id:
         return "Error: Authentication required."
@@ -392,9 +421,9 @@ def update_transactions(
 
 @tool(return_direct=True)
 def get_savings(
-    Month: str = None,
-    DateFrom: str = None,
-    DateTo: str = None,
+    Month: Optional[str] = None,
+    DateFrom: Optional[str] = None,
+    DateTo: Optional[str] = None,
     user_id: Optional[Union[int, str]] = None,
 ) -> str:
     """Calculate savings securely with user isolation."""

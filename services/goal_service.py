@@ -119,9 +119,9 @@ def get_goals_raw(
 def create_goal(
     Title: str,
     Target_amount: Union[float, str],
-    Deadline: str = None,
+    Deadline: Optional[str] = None,
     Saved_amount: Optional[Union[float, str]] = 0,
-    Status: str = "Active",
+    Status: Optional[str] = "Active",
     user_id: Optional[Union[int, str]] = None,
 ) -> str:
     """Create a new financial savings goal."""
@@ -159,15 +159,19 @@ def create_goal(
 
 @tool(return_direct=True)
 def get_goals(
-    Title: str = None,
-    Started_at: str = None,
-    Deadline: str = None,
+    Title: Optional[str] = None,
+    Started_at: Optional[str] = None,
+    Deadline: Optional[str] = None,
     Target_amount: Optional[Union[float, str]] = None,
     Saved_amount: Optional[Union[float, str]] = None,
-    Status: str = None,
+    Status: Optional[str] = None,
     user_id: Optional[Union[int, str]] = None,
 ) -> str:
     """Retrieve goals for the current user."""
+    if _null_str(Title): Title = None
+    if _null_str(Status): Status = None
+    if _null_str(Started_at): Started_at = None
+    if _null_str(Deadline): Deadline = None
     if _null_str(Target_amount): Target_amount = None
     if _null_str(Saved_amount):  Saved_amount  = None
     try:
@@ -197,7 +201,7 @@ def get_goals(
 
 @tool(return_direct=True)
 def delete_goal(
-    Title: str = None,
+    Title: Optional[str] = None,
     Id: Optional[Union[int, str]] = None,
     Ids: Optional[List[int]] = None,
     user_id: Optional[Union[int, str]] = None,
@@ -213,6 +217,7 @@ def delete_goal(
     - To delete multiple specific goals: provide Ids=[id1, id2, ...].
     - NEVER delete by name alone if multiple records exist.
     """
+    if _null_str(Title): Title = None
     u_id = _resolve_uid(user_id)
     if not u_id:
         return "Error: Authentication required."

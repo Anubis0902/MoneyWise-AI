@@ -127,6 +127,9 @@ def _invoke_agent(query: str) -> str:
             except Exception:
                 return "The AI had trouble calling a tool. Try rephrasing your request."
         
+        if "429" in err or "rate limit" in err.lower() or "too many requests" in err.lower():
+            return "⚠️ **Too many requests.** I'm receiving a lot of requests right now. Please wait a moment and try again."
+
         logger.error(f"AI Agent Error: {err}\n{err_trace}")
         return "I'm having trouble processing that request right now. Please try again or rephrase your question."
 
