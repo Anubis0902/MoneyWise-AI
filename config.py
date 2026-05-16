@@ -10,17 +10,8 @@ this always picks up the latest GROQ_API_KEY from the environment
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
-
 load_dotenv()
 
-# Module-level client for backwards compatibility
-client = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    api_key=os.getenv("GROQ_API_KEY", ""),
-    temperature=0.2,
-    max_tokens=1024,
-)
 
 
 def get_client():
