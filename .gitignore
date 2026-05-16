@@ -31,6 +31,7 @@ logs/
 Thumbs.db
 scratch/
 dont_upload/
+ui/demo_data.py
 
 # ── NOTE: scripts/ is intentionally tracked ──────────────────────────────────
 # scripts/keep_alive.py     → Playwright keep-alive (used by GitHub Actions)
