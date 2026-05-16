@@ -160,13 +160,7 @@ All charts are **interactive Plotly figures** with hover tooltips in Indian curr
 │  GitHub Backup Repo        │  │  LLaMA 3.3 70B                    │
 │  MoneyWise.db (Base64)     │  │  (free tier inference)            │
 └───────────────────────────┘  └───────────────────────────────────┘
-           ▲
-           │ Playwright HTTP ping (every 6 h)
-┌──────────┴────────────────┐
-│  GitHub Actions (free)     │
-│  keep_alive.yml  (6 h)     │
-│  db_backup.yml   (daily)   │
-└───────────────────────────┘
+
 ```
 
 ---
